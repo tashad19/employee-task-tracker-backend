@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import type { SafeUser, LoginCredentials, InsertUser, AuthResponse } from "@shared/schema";
-import { apiRequest } from "./queryClient";
 
 interface AuthContextType {
   user: SafeUser | null;
@@ -17,6 +16,27 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
 
+export function getAuthToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
+  };
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  if (options.body) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  return fetch(url, { ...options, headers });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(() => {
     const stored = localStorage.getItem(USER_KEY);
@@ -28,6 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const isAdmin = user?.role === "admin";
+
+  const logout = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }, []);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -58,10 +85,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     verifyToken();
-  }, [token]);
+  }, [token, logout]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
-    const res = await apiRequest("POST", "/api/auth/login", credentials);
+    const res = await authFetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || "Login failed");
+    }
+    
     const data: AuthResponse = await res.json();
     
     setToken(data.token);
@@ -71,20 +107,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (userData: InsertUser) => {
-    const res = await apiRequest("POST", "/api/auth/register", userData);
+    const res = await authFetch("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || "Registration failed");
+    }
+    
     const data: AuthResponse = await res.json();
     
     setToken(data.token);
     setUser(data.user);
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-  }, []);
-
-  const logout = useCallback(() => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
   }, []);
 
   return (
@@ -100,8 +138,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
-
-export function getAuthToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
 }
