@@ -35,8 +35,22 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
-  console.log("building client...");
-  await viteBuild();
+  const hasViteConfig =
+    await import("fs/promises").then(async (fs) => {
+      try {
+        await fs.access("vite.config.ts");
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+  if (hasViteConfig) {
+    console.log("building client...");
+    await viteBuild();
+  } else {
+    console.log("no Vite config found, skipping client build");
+  }
 
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));
@@ -60,6 +74,7 @@ async function buildAll() {
     logLevel: "info",
   });
 }
+
 
 buildAll().catch((err) => {
   console.error(err);
