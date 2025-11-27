@@ -3,6 +3,10 @@
 A full-stack web application for managing employee tasks with role-based access control. Admin users can create, read, update, and delete employees and tasks, while regular users can view only their assigned tasks and update task statuses.
 
 ## Screenshots
+<img width="641" height="300" alt="image" src="https://github.com/user-attachments/assets/6185f66b-2a11-42a0-b386-4ce49869fad8" />
+<img width="641" height="300" alt="image" src="https://github.com/user-attachments/assets/23bde0a6-b0ff-4c61-bbc3-0ea220e1e34e" />
+<img width="641" height="300" alt="image" src="https://github.com/user-attachments/assets/e930d6ac-8673-438f-a856-39146f9d0e7e" />
+<img width="641" height="300" alt="image" src="https://github.com/user-attachments/assets/49887414-fd11-43f9-b868-1739fe0ff95b" />
 
 
 
