@@ -21,7 +21,7 @@ app.use((req, res, next) => {
     "http://localhost:5000",
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://employee-task-tracker-backend.onrender.com",
+    "https://employee-task-tracker-backend.vercel.app/",
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin || "")) {
