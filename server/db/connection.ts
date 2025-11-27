@@ -1,0 +1,28 @@
+import mongoose from "mongoose";
+import { log } from "../index";
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  throw new Error("MONGODB_URI environment variable is not defined");
+}
+
+export async function connectDB(): Promise<void> {
+  try {
+    await mongoose.connect(MONGODB_URI);
+    log("MongoDB connected successfully", "mongodb");
+  } catch (error) {
+    log(`MongoDB connection error: ${error}`, "mongodb");
+    throw error;
+  }
+}
+
+mongoose.connection.on("disconnected", () => {
+  log("MongoDB disconnected", "mongodb");
+});
+
+mongoose.connection.on("error", (err) => {
+  log(`MongoDB error: ${err}`, "mongodb");
+});
+
+export default mongoose;
