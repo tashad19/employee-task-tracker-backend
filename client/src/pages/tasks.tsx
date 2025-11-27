@@ -43,11 +43,12 @@ import { useAuth } from "@/lib/auth";
 import { queryClient } from "@/lib/queryClient";
 import { apiGet, apiDelete, apiPut } from "@/lib/api";
 import { TaskStatus, type Task, type Employee, type TaskWithEmployee, type TaskStatusType } from "@shared/schema";
+import { Redirect } from "wouter";
 
 const LOCAL_STORAGE_KEY = "task_tracker_tasks";
 
 export default function TasksPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -280,7 +281,7 @@ export default function TasksPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {isAdmin ? (
+                      {(isAdmin || task.employeeId === user?.employeeId) ? (
                         <Select
                           value={task.status}
                           onValueChange={(value: TaskStatusType) =>

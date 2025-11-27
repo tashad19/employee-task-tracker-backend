@@ -322,11 +322,10 @@ export async function registerRoutes(
     }
   );
 
-  // Update task (admin only)
+  // Update task (admin for full update, users can update status for their own tasks)
   app.put(
     "/api/tasks/:id",
     authenticate,
-    requireAdmin,
     async (req: AuthRequest, res) => {
       try {
         const { title, description, status, employeeId, dueDate } = req.body;
@@ -337,20 +336,34 @@ export async function registerRoutes(
           return res.status(404).json({ message: "Task not found" });
         }
 
-        // If changing employee, verify it exists
-        if (employeeId && employeeId !== task.employeeId.toString()) {
-          const employee = await Employee.findById(employeeId);
-          if (!employee) {
-            return res.status(400).json({ message: "Invalid employee ID" });
-          }
-          task.employeeId = employeeId;
+        // Check if user is admin or if this is their task
+        const isAdmin = req.user?.role === "admin";
+        const isOwnTask = req.user?.employeeId?.toString() === task.employeeId.toString();
+
+        if (!isAdmin && !isOwnTask) {
+          return res.status(403).json({ message: "You can only update your own tasks" });
         }
 
-        if (title) task.title = title;
-        if (description !== undefined) task.description = description;
-        if (status) task.status = status;
-        if (dueDate !== undefined) {
-          task.dueDate = dueDate ? new Date(dueDate) : undefined;
+        // Regular users can only update status
+        if (!isAdmin) {
+          if (status) task.status = status;
+        } else {
+          // Admins can update everything
+          // If changing employee, verify it exists
+          if (employeeId && employeeId !== task.employeeId.toString()) {
+            const employee = await Employee.findById(employeeId);
+            if (!employee) {
+              return res.status(400).json({ message: "Invalid employee ID" });
+            }
+            task.employeeId = employeeId;
+          }
+
+          if (title) task.title = title;
+          if (description !== undefined) task.description = description;
+          if (status) task.status = status;
+          if (dueDate !== undefined) {
+            task.dueDate = dueDate ? new Date(dueDate) : undefined;
+          }
         }
 
         await task.save();
