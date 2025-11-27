@@ -70,12 +70,21 @@ app.use((req, res, next) => {
     throw err
   })
 
-  if (process.env.NODE_ENV === "production") {
+  // Disable frontend serving when running on Render backend-only deployments
+  const isRender = process.env.RENDER || process.env.RENDER_SERVICE_ID
+
+  if (process.env.NODE_ENV === "production" && !isRender) {
+    // Only serve static frontend when NOT on Render backend
     serveStatic(app)
-  } else {
+  } else if (!isRender) {
+    // Local dev uses Vite
     const { setupVite } = await import("./vite")
     await setupVite(httpServer, app)
+  } else {
+    // Render backend mode -> no frontend
+    console.log("Running in Render backend mode: skipping frontend serving")
   }
+
 
   const port = parseInt(process.env.PORT || "5000", 10)
 
