@@ -2,6 +2,10 @@
 
 A full-stack web application for managing employee tasks with role-based access control. Admin users can create, read, update, and delete employees and tasks, while regular users can view only their assigned tasks and update task statuses.
 
+## Screenshots
+
+
+
 ## Features
 
 - **User Authentication**: JWT-based authentication with role-based access control
@@ -230,34 +234,6 @@ The app uses JWT (JSON Web Tokens) for authentication:
 - Regular users can only access/modify their own tasks
 - Employee emails are unique
 - Input validation with Zod schemas
-
-## Troubleshooting
-
-### MongoDB Connection Error
-- Ensure MongoDB is running
-- Check `MONGODB_URI` environment variable
-- Verify network access (if using Atlas)
-
-### Port Already in Use
-```bash
-# Change PORT in .env or use different port
-PORT=3001 npm run dev
-```
-
-### Clearing Data
-To reset the database:
-```bash
-# Delete all collections in MongoDB
-# Or create a new database
-```
-
-### Build Errors
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
 
 ## Performance Notes
 
