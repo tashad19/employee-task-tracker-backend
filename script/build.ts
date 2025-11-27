@@ -1,4 +1,5 @@
 import { build as esbuild } from "esbuild"
+import { build as viteBuild } from "vite"
 import { rm, readFile } from "fs/promises"
 
 const allowlist = [
@@ -32,7 +33,10 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true })
 
-  console.log("Skipping client build because Vite is not used")
+  console.log("Building client...")
+  await viteBuild({
+    configFile: "client/vite.config.ts"
+  })
 
   console.log("Building server...")
   const pkg = JSON.parse(await readFile("package.json", "utf-8"))
