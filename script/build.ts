@@ -3,29 +3,18 @@ import { build as viteBuild } from "vite"
 import { rm, readFile } from "fs/promises"
 
 const allowlist = [
-  "@google/generative-ai",
-  "@neondatabase/serverless",
   "axios",
-  "connect-pg-simple",
-  "cors",
   "date-fns",
   "drizzle-orm",
   "drizzle-zod",
   "express",
-  "express-rate-limit",
   "express-session",
   "jsonwebtoken",
   "memorystore",
-  "multer",
-  "nanoid",
-  "nodemailer",
-  "openai",
+  "mongoose",
   "passport",
   "passport-local",
-  "stripe",
-  "uuid",
   "ws",
-  "xlsx",
   "zod",
   "zod-validation-error"
 ]
@@ -52,9 +41,6 @@ async function buildAll() {
     bundle: true,
     format: "cjs",
     outfile: "dist/index.cjs",
-    define: {
-      "process.env.NODE_ENV": '"production"'
-    },
     minify: true,
     external: externals,
     logLevel: "info"
