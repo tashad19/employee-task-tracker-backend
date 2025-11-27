@@ -1,16 +1,151 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { AuthProvider, useAuth } from "@/lib/auth";
+import { Loader2 } from "lucide-react";
+import LoginPage from "@/pages/login";
+import RegisterPage from "@/pages/register";
+import DashboardPage from "@/pages/dashboard";
+import TasksPage from "@/pages/tasks";
+import EmployeesPage from "@/pages/employees";
 import NotFound from "@/pages/not-found";
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    setLocation("/login");
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAdmin, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    setLocation("/dashboard");
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    setLocation("/dashboard");
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const style = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <header className="flex items-center justify-between gap-2 p-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <SidebarTrigger data-testid="button-sidebar-toggle" />
+            <ThemeToggle />
+          </header>
+          <main className="flex-1 overflow-auto">{children}</main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
 
 function Router() {
   return (
     <Switch>
-      {/* Add pages below */}
-      {/* <Route path="/" component={Home}/> */}
-      {/* Fallback to 404 */}
+      <Route path="/">
+        <Redirect to="/dashboard" />
+      </Route>
+      <Route path="/login">
+        <PublicRoute>
+          <LoginPage />
+        </PublicRoute>
+      </Route>
+      <Route path="/register">
+        <PublicRoute>
+          <RegisterPage />
+        </PublicRoute>
+      </Route>
+      <Route path="/dashboard">
+        <ProtectedRoute>
+          <AppLayout>
+            <DashboardPage />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/tasks">
+        <ProtectedRoute>
+          <AppLayout>
+            <TasksPage />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/employees">
+        <ProtectedRoute>
+          <AdminRoute>
+            <AppLayout>
+              <EmployeesPage />
+            </AppLayout>
+          </AdminRoute>
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -19,10 +154,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="light">
+        <TooltipProvider>
+          <AuthProvider>
+            <Router />
+            <Toaster />
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
