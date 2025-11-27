@@ -281,28 +281,24 @@ export default function TasksPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {(isAdmin || task.employeeId === user?.employeeId) ? (
-                        <Select
-                          value={task.status}
-                          onValueChange={(value: TaskStatusType) =>
-                            updateStatusMutation.mutate({ id: task._id, status: value })
-                          }
+                      <Select
+                        value={task.status}
+                        onValueChange={(value: TaskStatusType) =>
+                          updateStatusMutation.mutate({ id: task._id, status: value })
+                        }
+                      >
+                        <SelectTrigger
+                          className="w-[130px] h-8"
+                          data-testid={`select-status-${task._id}`}
                         >
-                          <SelectTrigger
-                            className="w-[130px] h-8"
-                            data-testid={`select-status-${task._id}`}
-                          >
-                            <StatusBadge status={task.status} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={TaskStatus.PENDING}>Pending</SelectItem>
-                            <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
-                            <SelectItem value={TaskStatus.COMPLETED}>Completed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <StatusBadge status={task.status} />
-                      )}
+                          <StatusBadge status={task.status} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={TaskStatus.PENDING}>Pending</SelectItem>
+                          <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
+                          <SelectItem value={TaskStatus.COMPLETED}>Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {task.dueDate

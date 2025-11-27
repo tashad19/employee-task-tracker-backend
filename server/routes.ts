@@ -41,11 +41,25 @@ export async function registerRoutes(
         });
       }
 
+      let employeeId: any = undefined;
+
+      // For regular users, create an Employee record
+      if (role === "user" || (!role)) {
+        const employee = new Employee({
+          name: username,
+          role: "Team Member",
+          email: email,
+        });
+        await employee.save();
+        employeeId = employee._id;
+      }
+
       const user = new User({
         username,
         email,
         password,
         role: role || "user",
+        employeeId,
       });
 
       await user.save();

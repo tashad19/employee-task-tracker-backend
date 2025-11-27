@@ -21,7 +21,7 @@ export const userSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.enum([UserRole.ADMIN, UserRole.USER]),
-  employeeId: z.string().optional(),
+  employeeId: z.string().optional().nullable(),
 });
 
 export const insertUserSchema = userSchema.omit({ _id: true });
