@@ -11,7 +11,11 @@ if (!MONGODB_URI) {
 
 export async function connectDB(): Promise<void> {
   try {
-    await mongoose.connect(MONGODB_URI);
+    if (!process.env.MONGO_URI) {
+      throw new Error("Missing MONGO_URI")
+    }
+    mongoose.connect(process.env.MONGO_URI)
+
     log("MongoDB connected successfully", "mongodb");
   } catch (error) {
     log(`MongoDB connection error: ${error}`, "mongodb");
