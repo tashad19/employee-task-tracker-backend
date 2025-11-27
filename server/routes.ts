@@ -243,17 +243,18 @@ export async function registerRoutes(
 
       let query: any = {};
 
-      // If user is logged in and not admin, only show their tasks
+      // If user is logged in and not admin, ONLY show their tasks
       if (req.user && req.user.role !== "admin" && req.user.employeeId) {
         query.employeeId = req.user.employeeId;
+      } else if (req.user?.role === "admin") {
+        // Only admins can filter by employee
+        if (employeeId && employeeId !== "all") {
+          query.employeeId = employeeId;
+        }
       }
 
       if (status && status !== "all") {
         query.status = status;
-      }
-
-      if (employeeId && employeeId !== "all") {
-        query.employeeId = employeeId;
       }
 
       let tasksQuery = Task.find(query)
